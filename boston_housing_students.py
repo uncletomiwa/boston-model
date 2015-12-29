@@ -195,7 +195,7 @@ def fit_predict_model(city_data):
     # 2. Use gridearch to fine tune the Decision Tree Regressor and find the best model
     # http://scikit-learn.org/stable/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV
 
-    grid = GridSearchCV(regressor, {'random_state': [3 ], 'max_features': [ 4]}, scoring=scorer)
+    grid = GridSearchCV(regressor, parameters, scoring=scorer)
 
     # Fit the learner to the training data
     print "Final Model: "
@@ -206,6 +206,7 @@ def fit_predict_model(city_data):
     y = grid.predict(x)
     print "House: " + str(x)
     print "Prediction: " + str(y)
+    print "Best model parameter:  " + str(grid.best_params_)
 
 
 '''Analyze the Boston housing data. Evaluate and validate the
@@ -223,9 +224,9 @@ def main():
     X_train, y_train, X_test, y_test = split_data(city_data)
 
     # Learning Curve Graphs
-    # max_depths = [1,2,3,4,5,6,7,8,9,10]
-    # for max_depth in max_depths:
-    #     learning_curve(max_depth, X_train, y_train, X_test, y_test)
+    max_depths = [1,2,3,4,5,6,7,8,9,10]
+    for max_depth in max_depths:
+        learning_curve(max_depth, X_train, y_train, X_test, y_test)
     # #
     # # Model Complexity Graph
     model_complexity(X_train, y_train, X_test, y_test)
