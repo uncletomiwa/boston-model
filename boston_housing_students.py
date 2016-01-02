@@ -17,6 +17,7 @@ from sklearn import cross_validation
 from sklearn.metrics import  mean_squared_error
 from sklearn.metrics import make_scorer
 from sklearn.grid_search import GridSearchCV
+from sklearn.neighbors import NearestNeighbors
 
 '''Load the Boston dataset.'''
 def load_data():
@@ -171,6 +172,14 @@ def model_complexity_graph(max_depth, train_err, test_err):
     pl.show()
 
 
+'''Find and return the nearest neighbours of x in X'''
+def find_nearest_neighbor_indexes(x, X):  # x is your vector and X is the data set.
+   neigh = NearestNeighbors( n_neighbors = 10 )
+   neigh.fit(X)
+   distance, indexes = neigh.kneighbors(x)
+
+   return indexes
+
 '''Find and tune the optimal model. Make a prediction on housing data.'''
 def fit_predict_model(city_data):
 
@@ -196,6 +205,7 @@ def fit_predict_model(city_data):
     # http://scikit-learn.org/stable/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV
 
     grid = GridSearchCV(regressor, parameters, scoring=scorer)
+    grid.max_depth = 5
 
     # Fit the learner to the training data
     print "Final Model: "
@@ -203,10 +213,23 @@ def fit_predict_model(city_data):
     
     # Use the model to predict the output of a particular sample
     x = np.array([11.95, 0.00, 18.100, 0, 0.6590, 5.6090, 90.00, 1.385, 24, 680.0, 20.20, 332.09, 12.13])
-    y = grid.predict(x)
+    _y = grid.predict(x)
     print "House: " + str(x)
-    print "Prediction: " + str(y)
+    print "Prediction: " + str(_y)
     print "Best model parameter:  " + str(grid.best_params_)
+
+    regressor.max_depth = grid.best_params_['max_depth']
+    regressor.fit(X, y)
+    prediction = regressor.predict(x)
+    print "Price prediction with regressor: %s" % str(prediction)
+
+    indexes = find_nearest_neighbor_indexes(x, X)
+    sum_prices = []
+    for i in indexes:
+        sum_prices.append(city_data.target[i])
+
+    neighbor_avg = np.mean(sum_prices)
+    print "Nearest Neighbor Average: %s" % str(neighbor_avg)
 
 
 '''Analyze the Boston housing data. Evaluate and validate the
@@ -227,7 +250,7 @@ def main():
     max_depths = [1,2,3,4,5,6,7,8,9,10]
     for max_depth in max_depths:
         learning_curve(max_depth, X_train, y_train, X_test, y_test)
-    # #
+    # # #
     # # Model Complexity Graph
     model_complexity(X_train, y_train, X_test, y_test)
     #
